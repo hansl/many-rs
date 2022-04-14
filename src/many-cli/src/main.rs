@@ -167,6 +167,7 @@ fn main() {
     match subcommand {
         SubCommand::Id(o) => {
             if let Ok(data) = hex::decode(&o.arg) {
+                info!("Cool stuff!");
                 match Identity::try_from(data.as_slice()) {
                     Ok(mut i) => {
                         if let Some(subid) = o.subid {
