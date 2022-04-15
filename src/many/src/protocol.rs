@@ -24,6 +24,7 @@ impl Attribute {
     }
 
     pub const fn new(id: AttributeId, arguments: Vec<CborAny>) -> Self {
+        eprintln!("TESTING");
         Self {
             id,
             arguments: Some(arguments),
