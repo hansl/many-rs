@@ -24,7 +24,6 @@ impl Attribute {
     }
 
     pub const fn new(id: AttributeId, arguments: Vec<CborAny>) -> Self {
-        eprintln!("TESTING");
         Self {
             id,
             arguments: Some(arguments),
@@ -32,6 +31,7 @@ impl Attribute {
     }
 
     pub fn with_arguments(&self, arguments: Vec<CborAny>) -> Self {
+        eprintln!("TESTING");
         Self {
             arguments: Some(arguments),
             ..self.clone()
