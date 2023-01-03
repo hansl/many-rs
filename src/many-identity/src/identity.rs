@@ -120,12 +120,14 @@ macro_rules! decl_verifier_impl {
 decl_identity_impl!(
     impl for Box<dyn Identity>;
     impl<I: Identity> for Box<I>;
+    impl<I: Identity + Sync> for &I;
     impl<I: Identity + Sync> for std::sync::Arc<I>;
 );
 
 decl_verifier_impl!(
     impl for Box<dyn Verifier>;
     impl<I: Verifier> for Box<I>;
+    impl<I: Verifier + Sync> for &I;
     impl<I: Verifier + Sync> for std::sync::Arc<I>;
 );
 
