@@ -25,7 +25,7 @@ where
     }
 }
 
-impl<I: Identity> ManyClient<I> {
+impl<I: Identity + 'static> ManyClient<I> {
     pub fn new<S: IntoUrl>(url: S, to: Address, identity: I) -> Result<Self, String> {
         let client = AsyncClient::new(url, to, identity)?;
         Ok(Self { client })

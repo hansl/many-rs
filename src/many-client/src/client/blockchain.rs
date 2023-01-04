@@ -18,4 +18,4 @@ trait BlockchainClientTrait {
 }
 
 #[derive(Debug, Clone)]
-pub struct BlockchainClient<I: Identity>(ManyClient<I>);
+pub struct BlockchainClient<I: Identity + Sync>(ManyClient<I>);

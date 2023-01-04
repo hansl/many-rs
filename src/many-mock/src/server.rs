@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use coset::CoseSign1;
 use many_error::ManyError;
 use many_identity::verifiers::AnonymousVerifier;
-use many_identity::Identity;
+use many_identity::{one_of_verifier, Identity, OneOfVerifier};
 use many_identity_dsa::CoseKeyVerifier;
 use many_identity_webauthn::WebAuthnVerifier;
 use many_modules::base;
@@ -16,7 +16,7 @@ use crate::MockEntries;
 pub struct ManyMockServer<I: Identity> {
     mock_entries: MockEntries,
     identity: I,
-    verifier: (AnonymousVerifier, CoseKeyVerifier, WebAuthnVerifier),
+    verifier: OneOfVerifier,
 }
 
 impl<I: Identity> ManyMockServer<I> {
@@ -25,11 +25,12 @@ impl<I: Identity> ManyMockServer<I> {
         allowed_origins: Option<Vec<ManyUrl>>,
         identity: I,
     ) -> Self {
-        let verifier = (
+        let verifier = one_of_verifier!(
             AnonymousVerifier,
             CoseKeyVerifier,
             WebAuthnVerifier::new(allowed_origins),
-        );
+        )
+        .into();
 
         ManyMockServer {
             mock_entries,
@@ -40,9 +41,10 @@ impl<I: Identity> ManyMockServer<I> {
 }
 
 #[async_trait]
-impl<I: Identity + Debug + Send + Sync> LowLevelManyRequestHandler for ManyMockServer<I> {
+impl<I: Identity + Debug + 'static> LowLevelManyRequestHandler for ManyMockServer<I> {
     async fn execute(&self, envelope: CoseSign1) -> Result<CoseSign1, String> {
-        let request = many_protocol::decode_request_from_cose_sign1(&envelope, &self.verifier);
+        let request =
+            many_protocol::decode_request_from_cose_sign1(&envelope, self.verifier.clone());
         let id = &self.identity;
 
         let message = request.map_err(|_| "Error processing the request".to_string())?;

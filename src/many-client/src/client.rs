@@ -7,7 +7,7 @@ pub use ledger::LedgerClient;
 
 use coset::{CoseSign1, TaggedCborSerializable};
 use many_identity::verifiers::AnonymousVerifier;
-use many_identity::{verifiers, Identity};
+use many_identity::{one_of_verifier, Identity, OneOfVerifier};
 use many_identity_dsa::CoseKeyVerifier;
 use many_modules::base::Status;
 use many_protocol::{
@@ -23,10 +23,10 @@ pub struct ManyClient<I: Identity> {
     identity: I,
     to: Option<Address>,
     url: Url,
-    verifier: (AnonymousVerifier, CoseKeyVerifier),
+    verifier: OneOfVerifier,
 }
 
-impl<I: Identity + Debug> Debug for ManyClient<I> {
+impl<I: Identity + Debug + Sync + Send> Debug for ManyClient<I> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ManyClient")
             .field("id", &self.identity)
@@ -56,9 +56,9 @@ pub async fn send_envelope<S: IntoUrl>(url: S, message: CoseSign1) -> Result<Cos
         .map_err(|e| ManyError::deserialization_error(e.to_string()))
 }
 
-impl<I: Identity> ManyClient<I> {
+impl<I: Identity + 'static> ManyClient<I> {
     pub fn new<S: IntoUrl>(url: S, to: Address, identity: I) -> Result<Self, String> {
-        let verifier = (verifiers::AnonymousVerifier, CoseKeyVerifier);
+        let verifier = one_of_verifier!(AnonymousVerifier, CoseKeyVerifier).into();
 
         Ok(Self {
             identity,

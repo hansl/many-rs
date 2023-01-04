@@ -14,4 +14,4 @@ trait BaseClientTrait {
 }
 
 #[derive(Debug, Clone)]
-pub struct BaseClient<I: Identity>(ManyClient<I>);
+pub struct BaseClient<I: Identity + 'static>(ManyClient<I>);

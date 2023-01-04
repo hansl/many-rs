@@ -82,7 +82,7 @@ pub fn many_client(attr: TokenStream, input: TokenStream) -> TokenStream {
     let methods = TokenStream2::from_iter(methods_iter);
 
     let q = quote! {
-        impl<I: many_identity::Identity> #r#type<I> {
+        impl<I: many_identity::Identity + 'static> #r#type<I> {
             #methods
 
             pub fn new(client: crate::ManyClient<I>) -> Self {

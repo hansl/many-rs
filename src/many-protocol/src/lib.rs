@@ -13,7 +13,7 @@ pub type ManyUrl = url::Url;
 
 pub fn decode_request_from_cose_sign1(
     envelope: &CoseSign1,
-    verifier: &impl Verifier,
+    verifier: impl Verifier,
 ) -> Result<RequestMessage, ManyError> {
     let from_id = verifier.verify_1(envelope)?;
 
@@ -39,7 +39,7 @@ pub fn decode_request_from_cose_sign1(
 pub fn decode_response_from_cose_sign1(
     envelope: &CoseSign1,
     to: Option<Address>,
-    verifier: &impl Verifier,
+    verifier: impl Verifier,
 ) -> Result<ResponseMessage, ManyError> {
     let message = ResponseMessage::decode_and_verify(envelope, verifier)?;
 
@@ -55,22 +55,22 @@ pub fn decode_response_from_cose_sign1(
 
 fn encode_cose_sign1_from_payload(
     payload: Vec<u8>,
-    identity: &impl Identity,
+    identity: impl Identity,
 ) -> Result<CoseSign1, ManyError> {
     let sign1 = CoseSign1Builder::default().payload(payload).build();
     identity.sign_1(sign1)
 }
 
-pub fn encode_cose_sign1_from_response(
+pub fn encode_cose_sign1_from_response<I: Identity>(
     response: ResponseMessage,
-    identity: &impl Identity,
+    identity: I,
 ) -> Result<CoseSign1, ManyError> {
     encode_cose_sign1_from_payload(response.to_bytes().unwrap(), identity)
 }
 
 pub fn encode_cose_sign1_from_request(
     request: RequestMessage,
-    identity: &impl Identity,
+    identity: impl Identity,
 ) -> Result<CoseSign1, ManyError> {
     // We don't allow illegal from fields in requests.
     if request.from == Some(Address::ILLEGAL) {
@@ -94,7 +94,7 @@ fn encode_illegal() {
         attributes: Default::default(),
     };
 
-    assert!(encode_cose_sign1_from_request(message, &many_identity::AnonymousIdentity).is_err());
+    assert!(encode_cose_sign1_from_request(message, many_identity::AnonymousIdentity).is_err());
 }
 
 #[test]
@@ -118,6 +118,6 @@ fn decode_illegal() {
         attributes: Default::default(),
     };
     let envelope =
-        encode_cose_sign1_from_request(message, &many_identity::AnonymousIdentity).unwrap();
+        encode_cose_sign1_from_request(message, many_identity::AnonymousIdentity).unwrap();
     assert!(decode_request_from_cose_sign1(&envelope, &IllegalVerifier).is_err());
 }

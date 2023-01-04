@@ -5,7 +5,7 @@ use coset::{CborSerializable, CoseSign1};
 use many_client::ManyClient;
 use many_error::ManyError;
 use many_identity::verifiers::AnonymousVerifier;
-use many_identity::{Address, AnonymousIdentity, Identity};
+use many_identity::{one_of_verifier, Address, AnonymousIdentity, Identity};
 use many_identity_dsa::{CoseKeyIdentity, CoseKeyVerifier};
 use many_identity_hsm::{Hsm, HsmIdentity, HsmMechanismType, HsmSessionType, HsmUserType};
 use many_identity_webauthn::WebAuthnIdentity;
@@ -233,9 +233,9 @@ struct GetTokenIdOpt {
 }
 
 #[async_recursion(?Send)]
-async fn show_response<'a>(
-    response: &'a ResponseMessage,
-    client: ManyClient<impl Identity + 'a>,
+async fn show_response(
+    response: &ResponseMessage,
+    client: ManyClient<impl Identity + 'static>,
     r#async: bool,
 ) -> Result<(), anyhow::Error> {
     let ResponseMessage {
@@ -308,7 +308,7 @@ async fn show_response<'a>(
 async fn message(
     s: Url,
     to: Address,
-    key: impl Identity,
+    key: impl Identity + 'static,
     method: String,
     data: Vec<u8>,
     timestamp: Option<SystemTime>,
@@ -345,7 +345,7 @@ async fn message(
 async fn message_from_hex(
     s: Url,
     to: Address,
-    key: impl Identity,
+    key: impl Identity + 'static,
     hex: String,
     r#async: bool,
 ) -> Result<(), anyhow::Error> {
@@ -355,9 +355,11 @@ async fn message_from_hex(
     let envelope = CoseSign1::from_slice(&data).map_err(|e| anyhow!(e))?;
 
     let cose_sign1 = many_client::client::send_envelope(s, envelope).await?;
-    let response =
-        ResponseMessage::decode_and_verify(&cose_sign1, &(AnonymousVerifier, CoseKeyVerifier))
-            .map_err(|e| anyhow!(e))?;
+    let response = ResponseMessage::decode_and_verify(
+        &cose_sign1,
+        one_of_verifier!(AnonymousVerifier, CoseKeyVerifier),
+    )
+    .map_err(|e| anyhow!(e))?;
 
     show_response(&response, client, r#async).await
 }
@@ -610,7 +612,7 @@ async fn main() {
             let many = ManyServer::simple(
                 o.name,
                 Arc::clone(&key),
-                (AnonymousVerifier, CoseKeyVerifier),
+                one_of_verifier!(AnonymousVerifier, CoseKeyVerifier),
                 Some(std::env!("CARGO_PKG_VERSION").to_string()),
             );
             let mockfile = o.mockfile.unwrap_or_default();

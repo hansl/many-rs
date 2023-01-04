@@ -86,7 +86,7 @@ impl ResponseMessage {
 
     pub fn decode_and_verify(
         envelope: &CoseSign1,
-        verifier: &impl Verifier,
+        verifier: impl Verifier,
     ) -> Result<Self, ManyError> {
         let address = verifier.verify_1(envelope)?;
 

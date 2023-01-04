@@ -56,8 +56,8 @@ pub const MANYSERVER_DEFAULT_TIMEOUT: u64 = 300;
 pub struct ManyServer {
     modules: Vec<Arc<dyn ManyModule + Send>>,
     method_cache: BTreeSet<String>,
-    identity: Box<dyn Identity>,
-    verifier: Box<dyn Verifier>,
+    identity: Arc<dyn Identity + Sync + Send>,
+    verifier: Arc<dyn Verifier + Sync + Send>,
     public_key: Option<CoseKey>,
     name: String,
     version: Option<String>,
@@ -70,7 +70,7 @@ pub struct ManyServer {
 impl ManyServer {
     /// Create a test server. This should never be used in prod.
     #[cfg(feature = "testing")]
-    pub fn test(identity: impl Identity + 'static) -> Arc<Mutex<Self>> {
+    pub fn test(identity: impl Identity + Sync + Send + 'static) -> Arc<Mutex<Self>> {
         Self::simple(
             "test-many-server",
             identity,
@@ -81,8 +81,8 @@ impl ManyServer {
 
     pub fn simple(
         name: impl ToString,
-        identity: impl Identity + 'static,
-        verifier: impl Verifier + 'static,
+        identity: impl Identity + Sync + 'static,
+        verifier: impl Verifier + Sync + 'static,
         version: Option<String>,
     ) -> Arc<Mutex<Self>> {
         let public_key = identity.public_key();
@@ -98,15 +98,15 @@ impl ManyServer {
 
     pub fn new<N: ToString>(
         name: N,
-        identity: impl Identity + 'static,
-        verifier: impl Verifier + 'static,
+        identity: impl Identity + 'static + Sync,
+        verifier: impl Verifier + 'static + Sync,
         public_key: Option<CoseKey>,
     ) -> Arc<Mutex<Self>> {
         Arc::new(Mutex::new(Self {
             modules: vec![],
             name: name.to_string(),
-            identity: Box::new(identity),
-            verifier: Box::new(verifier),
+            identity: Arc::new(identity),
+            verifier: Arc::new(verifier),
             public_key,
             timeout: MANYSERVER_DEFAULT_TIMEOUT,
             fallback: None,
@@ -326,7 +326,7 @@ impl LowLevelManyRequestHandler for Arc<Mutex<ManyServer>> {
                     response.from = address;
 
                     let this = self.lock().unwrap();
-                    many_protocol::encode_cose_sign1_from_response(response, &this.identity)
+                    many_protocol::encode_cose_sign1_from_response(response, this.identity.as_ref())
                         .map_err(|e| e.to_string())
                 }
                 (None, Some(fb)) => {
