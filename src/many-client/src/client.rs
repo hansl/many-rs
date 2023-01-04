@@ -19,7 +19,7 @@ use reqwest::{IntoUrl, Url};
 use std::fmt::{Debug, Formatter};
 
 #[derive(Clone)]
-pub struct ManyClient<I: Identity> {
+pub struct ManyClient<I: Identity + 'static> {
     identity: I,
     to: Option<Address>,
     url: Url,

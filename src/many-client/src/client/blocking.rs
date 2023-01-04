@@ -8,7 +8,7 @@ use reqwest::IntoUrl;
 use crate::ManyClient as AsyncClient;
 
 #[derive(Debug, Clone)]
-pub struct ManyClient<I: Identity> {
+pub struct ManyClient<I: Identity + 'static> {
     client: AsyncClient<I>,
 }
 

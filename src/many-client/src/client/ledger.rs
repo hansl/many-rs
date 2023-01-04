@@ -14,4 +14,4 @@ trait LedgerClientTrait {
 }
 
 #[derive(Debug, Clone)]
-pub struct LedgerClient<I: Identity>(ManyClient<I>);
+pub struct LedgerClient<I: Identity + 'static>(ManyClient<I>);
