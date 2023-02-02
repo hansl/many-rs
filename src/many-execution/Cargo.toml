@@ -1,0 +1,46 @@
+[package]
+name = "many-execution"
+version = "0.1.0"
+edition = "2021"
+authors = ["The Lifted Initiative"]
+license = "Apache-2.0"
+description = ""
+readme = "README.md"
+homepage = "https://liftedinit.org"
+repository = "https://github.com/liftedinit/many-rs"
+keywords = ["cli", "web3", "blockchain", "tendermint", "proto", "crypto", "liftedinit", "execution", "smart-contracts"]
+categories = ["command-line-utilities"]
+
+[dependencies]
+anyhow = "1.0.65"
+async-trait = "0.1.57"
+clap = { version = "4.0.15", features = ["default", "derive"] }
+clap-verbosity-flag = "2.0.0"
+coset = "0.3.3"
+either = { version = "1.8.0", features = ["serde"] }
+hex = "0.4.3"
+json5 = "0.4.1"
+many-error = { path = "../many-error" }
+many-identity = { path = "../many-identity" }
+many-identity-dsa = { path = "../many-identity-dsa", features = ["ed25519", "ecdsa"] }
+many-protocol = { path = "../many-protocol" }
+many-macros = { path = "../many-macros" }
+many-modules = { path = "../many-modules" }
+many-server = { path = "../many-server" }
+many-types = { path = "../many-types", version = "0.1" }
+merk = { git = "https://github.com/liftedinit/merk.git", rev = "da0b660abbfd58abd4a942773f205d2c079f3b27" }
+minicbor = "0.18.0"
+rand = "0.8.5"
+serde = "1.0.147"
+serde_derive = "1.0.147"
+serde_json = "1.0.89"
+sha3 = "0.10.6"
+tiny_http = "0.12.0"
+tokio = { version = "1.21.2", features = ["default", "macros", "rt", "tracing"] }
+tracing = "0.1.37"
+tracing-subscriber = "0.3.16"
+wasi = "0.11.0"
+wasi-common = "3.0.1"
+wasmtime = { version = "3.0.1", features = ["default"] }
+wasmtime-wasi = "3.0.1"
+wiggle = { version = "3.0.1", features = ["wasmtime_async"] }

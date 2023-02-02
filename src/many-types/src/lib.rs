@@ -37,18 +37,18 @@ macro_rules! cbor_type_decl {
             $vis: vis struct $name: ident {
                 $(
                     $($tag: ident)* $fidx: literal => $fname: ident: $ftype: ty
-                ),+ $(,)?
+                ),* $(,)?
             }
         )*
     ) => {
         $(
-            #[derive(Clone, Debug, Decode, Encode, Eq, PartialEq)]
+            #[derive(Clone, Debug, minicbor::Decode, minicbor::Encode, Eq, PartialEq)]
             #[cfg_attr(feature = "cucumber", derive(Default))]
             #[cbor(map)]
             $vis struct $name {
                 $(
                     #[n( $fidx )] pub $fname: $ftype,
-                )+
+                )*
             }
         )*
     };

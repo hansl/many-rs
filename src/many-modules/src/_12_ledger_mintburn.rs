@@ -3,7 +3,6 @@ use many_error::ManyError;
 use many_identity::Address;
 use many_macros::many_module;
 use many_types::{cbor_type_decl, ledger, Memo};
-use minicbor::{Decode, Encode};
 
 cbor_type_decl!(
     pub struct TokenMintArgs {

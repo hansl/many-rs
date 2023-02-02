@@ -3,7 +3,6 @@ use many_error::ManyError;
 use many_identity::Address;
 use many_macros::many_module;
 use many_types::{cbor_type_decl, ledger, AttributeRelatedIndex, Memo};
-use minicbor::{Decode, Encode};
 
 pub mod extended_info;
 
