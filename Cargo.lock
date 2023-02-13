@@ -2923,7 +2923,7 @@ dependencies = [
  "indicatif",
  "itertools",
  "lazy_static",
- "log-panics",
+ "many-cli-helpers",
  "many-client",
  "many-error",
  "many-identity",
@@ -2939,10 +2939,8 @@ dependencies = [
  "ring",
  "rpassword 6.0.1",
  "serde_json",
- "syslog-tracing",
  "tokio",
  "tracing",
- "tracing-subscriber",
 ]
 
 [[package]]
@@ -3158,7 +3156,7 @@ dependencies = [
  "itertools",
  "json5",
  "lazy_static",
- "log-panics",
+ "many-cli-helpers",
  "many-client",
  "many-error",
  "many-identity",
@@ -3174,14 +3172,12 @@ dependencies = [
  "sha2 0.10.6",
  "signal-hook",
  "smol",
- "syslog-tracing",
  "tendermint",
  "tendermint-abci",
  "tendermint-proto",
  "tendermint-rpc",
  "tokio",
  "tracing",
- "tracing-subscriber",
  "vergen",
 ]
 
