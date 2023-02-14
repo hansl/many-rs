@@ -51,6 +51,7 @@ crates_repository(
         "//src/many-client-macros:Cargo.toml",
         "//src/many-client:Cargo.toml",
         "//src/many-error:Cargo.toml",
+        "//src/many-execution:Cargo.toml",
         "//src/many-identity-dsa:Cargo.toml",
         "//src/many-identity-hsm:Cargo.toml",
         "//src/many-identity-webauthn:Cargo.toml",

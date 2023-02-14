@@ -30,6 +30,10 @@ impl SubresourceId {
     pub const fn discriminant(&self) -> u8 {
         0x80 + ((self.0 & 0x7F00_0000) >> 24) as u8
     }
+
+    pub const fn to_u64(&self) -> u64 {
+        self.0 as u64
+    }
 }
 
 impl TryInto<SubresourceId> for i16 {
