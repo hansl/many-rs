@@ -1,4 +1,4 @@
-use crate::{Memo, Timestamp};
+use crate::{Memo, Timestamp, VecOrSingle};
 use coset::{CoseSign1, CoseSign1Builder};
 use many_error::ManyError;
 use many_identity::{Address, Identity, Verifier};
@@ -9,8 +9,10 @@ use minicbor::{Decode, Encode};
 #[cbor(map)]
 pub struct Certificate {
     /// The address of the delegated identity (`Alice` in the example).
+    /// If this contains multiple addresses, all of them can be delegated
+    /// from. The threshold field can restrict this behaviour.
     #[n(0)]
-    pub from: Address,
+    pub from: VecOrSingle<Address>,
 
     /// The address of the identity that can use the above identity (`Bob` in the example).
     #[n(1)]
@@ -26,16 +28,26 @@ pub struct Certificate {
 
     #[n(4)]
     pub r#final: Option<bool>,
+
+    /// The threshold. If missing, this is equivalent to 1.
+    /// If 0, this certificate is invalid.
+    /// If this is greater than the `from` list, this certificate can be
+    /// either considered invalid or never achievable.
+    /// If threshold is set, the server is allowed to keep this in a cache
+    /// temporarily for more signatures to accumulate.
+    #[n(5)]
+    pub threshold: Option<u64>,
 }
 
 impl Certificate {
     pub fn new(from: Address, to: Address, expiration: Timestamp) -> Self {
         Self {
-            from,
+            from: from.into(),
             to,
             expiration,
             memo: None,
             r#final: None,
+            threshold: None,
         }
     }
 
@@ -51,7 +63,8 @@ impl Certificate {
     }
 
     pub fn sign(&self, id: &impl Identity) -> Result<CoseSign1, ManyError> {
-        if !self.from.matches(&id.address()) {
+        let address = id.address();
+        if !self.from.iter().any(|f| f.matches(&address)) {
             return Err(ManyError::unknown("From does not match identity."));
         }
 
@@ -77,7 +90,7 @@ impl Certificate {
         let certificate: Self =
             minicbor::decode(payload).map_err(ManyError::deserialization_error)?;
 
-        if !certificate.from.matches(&from) {
+        if !certificate.from.iter().any(|id| id.matches(&from)) {
             return Err(ManyError::unknown("From does not match identity."));
         }
         if certificate.expiration <= now {

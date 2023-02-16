@@ -55,6 +55,7 @@ pub mod attributes {
             verifier: &impl Verifier,
             now: Timestamp,
         ) -> Result<Address, ManyError> {
+            let mut prev_address = to;
             let mut current_address = to;
             let mut it = self.inner.iter().peekable();
             while let Some(envelope) = it.next() {

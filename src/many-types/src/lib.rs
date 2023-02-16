@@ -118,6 +118,12 @@ impl<T> From<Vec<T>> for VecOrSingle<T> {
     }
 }
 
+impl<T> From<T> for VecOrSingle<T> {
+    fn from(v: T) -> Self {
+        Self(vec![v])
+    }
+}
+
 impl<T: Ord> From<VecOrSingle<T>> for BTreeSet<T> {
     fn from(v: VecOrSingle<T>) -> BTreeSet<T> {
         BTreeSet::from_iter(v.into_iter())
