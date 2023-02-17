@@ -55,7 +55,6 @@ pub mod attributes {
             verifier: &impl Verifier,
             now: Timestamp,
         ) -> Result<Address, ManyError> {
-            let mut prev_address = to;
             let mut current_address = to;
             let mut it = self.inner.iter().peekable();
             while let Some(envelope) = it.next() {
@@ -63,7 +62,7 @@ pub mod attributes {
                 let cert = many_types::delegation::Certificate::decode_and_verify(
                     envelope, verifier, now, is_last,
                 )?;
-                if cert.to == current_address {
+                if cert.to.iter().any(|a| a.matches(&current_address)) {
                     current_address = cert.from;
                 } else {
                     return Err(ManyError::unknown("Invalid certificate."));
