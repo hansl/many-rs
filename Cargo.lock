@@ -1370,6 +1370,17 @@ dependencies = [
 
 [[package]]
 name = "errno"
+version = "0.2.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f639046355ee4f37944e44f60642c6f3a7efa3cf6b78c78a0d989a8ce6c396a1"
+dependencies = [
+ "errno-dragonfly",
+ "libc",
+ "winapi",
+]
+
+[[package]]
+name = "errno"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "50d6a0976c999d473fe89ad888d5a284e55366d9dc9038b1ba2aa15128c4afa0"
@@ -2728,6 +2739,7 @@ dependencies = [
  "tracing",
  "typenum",
  "vergen",
+ "xch",
 ]
 
 [[package]]
@@ -3988,7 +4000,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2aae838e49b3d63e9274e1c01833cc8139d3fec468c3b84688c628f44b1ae11d"
 dependencies = [
  "bitflags",
- "errno",
+ "errno 0.3.0",
  "io-lifetimes",
  "libc",
  "linux-raw-sys",
@@ -5100,6 +5112,9 @@ name = "uuid"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc5cf98d8186244414c848017f0e2676b3fcb46807f6668a97dfe67359a3c4b7"
+dependencies = [
+ "getrandom 0.2.8",
+]
 
 [[package]]
 name = "uuid"
@@ -5577,6 +5592,18 @@ dependencies = [
  "rusticata-macros",
  "thiserror",
  "time",
+]
+
+[[package]]
+name = "xch"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e80beadb4e4bf6ce9b5a05894e429d75ee56278d36a3cdc9ae60a25949d19193"
+dependencies = [
+ "cc",
+ "errno 0.2.8",
+ "uuid 0.8.2",
+ "winapi",
 ]
 
 [[package]]

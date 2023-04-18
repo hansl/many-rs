@@ -75,10 +75,28 @@ impl From<Error> for ManyError {
     }
 }
 
-#[derive(Debug, From, TryInto)]
+#[derive(Debug, From)]
 pub(crate) enum Operation {
-    V1(merk_v1::Op),
-    V2(merk_v2::Op),
+    Put(Vec<u8>),
+    Delete,
+}
+
+impl Into<merk_v1::Op> for Operation {
+    fn into(self) -> merk_v1::Op {
+        match self {
+            Operation::Put(value) => merk_v1::Op::Put(value),
+            Operation::Delete => merk_v1::Op::Delete,
+        }
+    }
+}
+
+impl Into<merk_v2::Op> for Operation {
+    fn into(self) -> merk_v2::Op {
+        match self {
+            Operation::Put(value) => merk_v2::Op::Put(value),
+            Operation::Delete => merk_v2::Op::Delete,
+        }
+    }
 }
 
 #[derive(From, TryInto)]
@@ -109,16 +127,7 @@ impl Merk {
                 .apply(
                     batch
                         .iter()
-                        .filter_map(|(key, op)| match op {
-                            Operation::V1(operation) => Some((
-                                key.clone(),
-                                match operation {
-                                    merk_v1::Op::Put(value) => merk_v1::Op::Put(value.clone()),
-                                    merk_v1::Op::Delete => merk_v1::Op::Delete,
-                                },
-                            )),
-                            Operation::V2(_) => None,
-                        })
+                        .map(|(key, op)| (key.clone(), op.into()))
                         .collect::<Vec<_>>()
                         .as_slice(),
                 )
@@ -127,16 +136,7 @@ impl Merk {
                 .apply(
                     batch
                         .iter()
-                        .filter_map(|(key, op)| match op {
-                            Operation::V1(_) => None,
-                            Operation::V2(operation) => Some((
-                                key.clone(),
-                                match operation {
-                                    merk_v2::Op::Put(value) => merk_v2::Op::Put(value.clone()),
-                                    merk_v2::Op::Delete => merk_v2::Op::Delete,
-                                },
-                            )),
-                        })
+                        .map(|(key, op)| (key.clone(), op.into()))
                         .collect::<Vec<_>>()
                         .as_slice(),
                 )
@@ -144,42 +144,10 @@ impl Merk {
         }
     }
 
-    pub(crate) fn commit(&mut self, aux: &[(Vec<u8>, Operation)]) -> Result<(), Error> {
+    pub(crate) fn commit(&mut self, _aux: &[(Vec<u8>, Operation)]) -> Result<(), Error> {
         match self {
-            Merk::V1(merk) => merk
-                .commit(
-                    aux.iter()
-                        .filter_map(|(key, op)| match op {
-                            Operation::V1(operation) => Some((
-                                key.clone(),
-                                match operation {
-                                    merk_v1::Op::Put(value) => merk_v1::Op::Put(value.clone()),
-                                    merk_v1::Op::Delete => merk_v1::Op::Delete,
-                                },
-                            )),
-                            Operation::V2(_) => None,
-                        })
-                        .collect::<Vec<_>>()
-                        .as_slice(),
-                )
-                .map_err(Into::into),
-            Merk::V2(merk) => merk
-                .commit(
-                    aux.iter()
-                        .filter_map(|(key, op)| match op {
-                            Operation::V1(_) => None,
-                            Operation::V2(operation) => Some((
-                                key.clone(),
-                                match operation {
-                                    merk_v2::Op::Put(value) => merk_v2::Op::Put(value.clone()),
-                                    merk_v2::Op::Delete => merk_v2::Op::Delete,
-                                },
-                            )),
-                        })
-                        .collect::<Vec<_>>()
-                        .as_slice(),
-                )
-                .map_err(Into::into),
+            Merk::V1(merk) => merk.commit(&[]).map_err(Into::into),
+            Merk::V2(merk) => merk.commit(&[]).map_err(Into::into),
         }
     }
 
@@ -532,14 +500,7 @@ impl LedgerStorage {
 
         self.persistent_store.apply(&[(
             key_for_subresource.clone(),
-            match self.persistent_store {
-                InnerStorage::V1(_) => {
-                    merk_v1::Op::Put((current_id + 1).to_be_bytes().to_vec()).into()
-                }
-                InnerStorage::V2(_) => {
-                    merk_v2::Op::Put((current_id + 1).to_be_bytes().to_vec()).into()
-                }
-            },
+            Operation::Put((current_id + 1).to_be_bytes().to_vec()),
         )])?;
 
         self.persistent_store
